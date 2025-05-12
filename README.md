@@ -15,6 +15,53 @@ Preprocessing:
 
 * Split by patient: 12 train / 4 val / 4 test (≈19,500 2D images total).
 
+# Two-Stage Registration Pipeline
+### Affine Registration Network
+* Architecture: 2D CNN encoder (five 3×3 conv + max-pool), outputs 6 affine parameters (translation, rotation, scale, shear), then a spatial transformer decoder applies the warp.
+
+* Loss: Image similarity: MSE (α = 1)
+
+* Purpose: Globally align moving and reference slices to reduce large rigid shifts.
+
+### Deformable Registration Network
+* Architecture: Adapted from VoxelMorph’s U-Net: encoder (3×3 conv + pooling), bottleneck, decoder (deconv + skip-connections), outputs a Dense Displacement Field (DVF).
+
+* Spatial Transformer: Applies DVF to warp both image and segmentation via bilinear sampling.
+
+* Loss:
+
+1. Image similarity (MSE; α = 1)
+
+2. Segmentation similarity (Sørensen; β = 0.15)
+
+3. Smoothness regularizer (squared gradient of DVF; λ = 0.05)
+
+# Training & Evaluation
+* Training: Batch size of 64; 100 epochs; 25 steps/epoch; ~2 hrs total on 8× GTX Titan XPs.
+
+* Validation: Monitor NCC, SSD, MSE on held-out set.
+
+* Testing Metrics:
+
+1. Target Registration Error (TRE) at anatomical landmarks
+
+2. Dice Similarity Coefficient (DSC) & Hausdorff Distance (HD) on segmentation masks
+
+3. Dynamic Intensity Curves (TICs) within ROI (cortex, medulla)
+
+4. Visual inspection & subtraction images
+
+# Key Results
+| Metric / Comparison     |  Original | Post-Affine | Post-Deformable |
+| ----------------------- | :-------: | :---------: | :-------------: |
+| **Successive DSC**      |   0.927   |    0.937    |    **0.948**    |
+| **Successive HD (mm)**  |    2.96   |     2.68    |     **2.09**    |
+| **Successive TRE (mm)** | 3.09±2.51 |  3.04±1.76  |  **2.15±1.34**  |
+| **Static DSC**          |   0.928   |    0.933    |    **0.949**    |
+| **Static HD (mm)**      |    2.97   |     2.61    |     **2.40**    |
+| **Static TRE (mm)**     | 3.18±2.58 |  2.82±2.06  |  **1.09±1.39**  |
+
+
 The work in this project is directly related to the paper: 
 James Huang, Junyu Guo, Ivan Pedrosa, Baowei Fei, "Deep learning-based deformable registration of dynamic contrast enhanced MR images of the kidney," Proc. SPIE 12034, Medical Imaging 2022: Image-Guided Procedures, Robotic Interventions, and Modeling, 1203410 (4 April 2022); doi: 10.1117/12.2611768
 
