@@ -1,3 +1,30 @@
+# Usage
+1. Clone repository and install package
+```
+pip install .
+```
+
+2. Train model
+```
+kidney-mri-train-affine --data_dir /path/to/dicom_folders --epochs 30 --out affine.pth
+kidney-mri-train-deformable --data_dir /path/to/dicom_folders --epochs 30 --out deformable.pth
+```
+
+3. Predict & Visualize
+```
+kidney-mri-run \
+  --input /path/to/test_series \
+  --affine affine.pth \
+  --deformable deformable.pth \
+  --output registered.npy \
+  --slice 10
+```
+
+4. Evaluate
+```
+kidney-mri-evaluate --fixed /path/to/fixed_series --registered registered.npy
+```
+
 # Background & Motivation
 **Problem**: Respiratory motion during 3D DCE-MRI corrupts kidney images, biasing downstream kinetic analyses (e.g., blood flow, GFR).
 
@@ -59,6 +86,14 @@
 | **Static HD (mm)**      |    2.97   |     2.61    |     **2.40**    |
 | **Static TRE (mm)**     | 3.18±2.58 |  2.82±2.06  |  **1.09±1.39**  |
 
+# Conclusions & Impact
+* **Efficacy**: Two-stage deep registration significantly reduces respiratory motion artifacts in kidney DCE-MRI, preserving intensity fidelity.
+
+* **Speed & Scalability**: Once trained, registration is rapid (inference by CNNs) and unsupervised—no ground-truth deformations needed.
+
+* **Applications**: Improved kinetic modeling (blood flow, GFR), planning (surgery, RT), longitudinal renal function monitoring.
+
+* **Future**: Adaptation to other abdominal organs; integration with real-time/interventional MRI workflows.
 
 The work in this project is directly related to the paper: 
 James Huang, Junyu Guo, Ivan Pedrosa, Baowei Fei, "Deep learning-based deformable registration of dynamic contrast enhanced MR images of the kidney," Proc. SPIE 12034, Medical Imaging 2022: Image-Guided Procedures, Robotic Interventions, and Modeling, 1203410 (4 April 2022); doi: 10.1117/12.2611768
