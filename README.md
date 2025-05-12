@@ -1,14 +1,14 @@
 # Background & Motivation
-Problem: Respiratory motion during 3D DCE-MRI corrupts kidney images, biasing downstream kinetic analyses (e.g., blood flow, GFR).
+**Problem**: Respiratory motion during 3D DCE-MRI corrupts kidney images, biasing downstream kinetic analyses (e.g., blood flow, GFR).
 
-Prior Work: Traditional affine/non-rigid methods (optical flow, demons) can reduce motion but may alter intensity signals and are slow. Deep networks (VoxelMorph, Quicksilver) excel in brain, liver, lung, but have not been applied to abdominal DCE-MRI.
+**Prior Work**: Traditional affine/non-rigid methods (optical flow, demons) can reduce motion but may alter intensity signals and are slow. Deep networks (VoxelMorph, Quicksilver) excel in brain, liver, lung, but have not been applied to abdominal DCE-MRI.
 
-Goal: Develop a two-stage, unsupervised deep-learning pipeline (affine → deformable) to correct kidney motion in 4D DCE-MRI, improving both speed and registration fidelity.
+**Goal**: Develop a two-stage, unsupervised deep-learning pipeline (affine → deformable) to correct kidney motion in 4D DCE-MRI, improving both speed and registration fidelity.
 
 # Data & Preprocessing
-Dataset: DCE-MRI from 20 patients, each with 39 dynamic phases (pre-contrast through nephrographic), acquired on Philips 3T.
+**Dataset**: DCE-MRI from 20 patients, each with 39 dynamic phases (pre-contrast through nephrographic), acquired on Philips 3T.
 
-Preprocessing:
+**Preprocessing**:
 * Manual kidney segmentation on each slice (AnalyzePro).
 
 * Crop to kidney region, convert to 8-bit, resize to 224×384 (bilinear).
@@ -17,39 +17,37 @@ Preprocessing:
 
 # Two-Stage Registration Pipeline
 ### Affine Registration Network
-* Architecture: 2D CNN encoder (five 3×3 conv + max-pool), outputs 6 affine parameters (translation, rotation, scale, shear), then a spatial transformer decoder applies the warp.
+* **Architecture**: 2D CNN encoder (five 3×3 conv + max-pool), outputs 6 affine parameters (translation, rotation, scale, shear), then a spatial transformer decoder applies the warp.
 
-* Loss: Image similarity: MSE (α = 1)
+* **Loss**: Image similarity: MSE (α = 1)
 
-* Purpose: Globally align moving and reference slices to reduce large rigid shifts.
+* **Purpose**: Globally align moving and reference slices to reduce large rigid shifts.
 
 ### Deformable Registration Network
-* Architecture: Adapted from VoxelMorph’s U-Net: encoder (3×3 conv + pooling), bottleneck, decoder (deconv + skip-connections), outputs a Dense Displacement Field (DVF).
+* **Architecture**: Adapted from VoxelMorph’s U-Net: encoder (3×3 conv + pooling), bottleneck, decoder (deconv + skip-connections), outputs a Dense Displacement Field (DVF).
 
-* Spatial Transformer: Applies DVF to warp both image and segmentation via bilinear sampling.
+* **Spatial Transformer**: Applies DVF to warp both image and segmentation via bilinear sampling.
 
-* Loss:
+* **Loss**:
+  1. Image similarity (MSE; α = 1)
 
-1. Image similarity (MSE; α = 1)
+  2. Segmentation similarity (Sørensen; β = 0.15)
 
-2. Segmentation similarity (Sørensen; β = 0.15)
-
-3. Smoothness regularizer (squared gradient of DVF; λ = 0.05)
+  3. Smoothness regularizer (squared gradient of DVF; λ = 0.05)
 
 # Training & Evaluation
-* Training: Batch size of 64; 100 epochs; 25 steps/epoch; ~2 hrs total on 8× GTX Titan XPs.
+* **Training**: Batch size of 64; 100 epochs; 25 steps/epoch; ~2 hrs total on 8× GTX Titan XPs.
 
-* Validation: Monitor NCC, SSD, MSE on held-out set.
+* **Validation**: Monitor NCC, SSD, MSE on held-out set.
 
-* Testing Metrics:
+* **Testing Metrics**:
+  1. Target Registration Error (TRE) at anatomical landmarks
 
-1. Target Registration Error (TRE) at anatomical landmarks
+  2. Dice Similarity Coefficient (DSC) & Hausdorff Distance (HD) on segmentation masks
 
-2. Dice Similarity Coefficient (DSC) & Hausdorff Distance (HD) on segmentation masks
+  3. Dynamic Intensity Curves (TICs) within ROI (cortex, medulla)
 
-3. Dynamic Intensity Curves (TICs) within ROI (cortex, medulla)
-
-4. Visual inspection & subtraction images
+  4. Visual inspection & subtraction images
 
 # Key Results
 | Metric / Comparison     |  Original | Post-Affine | Post-Deformable |
