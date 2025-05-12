@@ -44,6 +44,8 @@ kidney-mri-evaluate --fixed /path/to/fixed_series --registered registered.npy
 
 # Two-Stage Registration Pipeline
 ### Affine Registration Network
+![image](https://github.com/user-attachments/assets/24189e85-4c49-4471-9b47-842f0768189c)
+
 * **Architecture**: 2D CNN encoder (five 3×3 conv + max-pool), outputs 6 affine parameters (translation, rotation, scale, shear), then a spatial transformer decoder applies the warp.
 
 * **Loss**: Image similarity: MSE (α = 1)
@@ -51,6 +53,8 @@ kidney-mri-evaluate --fixed /path/to/fixed_series --registered registered.npy
 * **Purpose**: Globally align moving and reference slices to reduce large rigid shifts.
 
 ### Deformable Registration Network
+![image](https://github.com/user-attachments/assets/b2154399-6adf-4579-88cd-f33adece7286)
+
 * **Architecture**: Adapted from VoxelMorph’s U-Net: encoder (3×3 conv + pooling), bottleneck, decoder (deconv + skip-connections), outputs a Dense Displacement Field (DVF).
 
 * **Spatial Transformer**: Applies DVF to warp both image and segmentation via bilinear sampling.
@@ -85,6 +89,10 @@ kidney-mri-evaluate --fixed /path/to/fixed_series --registered registered.npy
 | **Static DSC**          |   0.928   |    0.933    |    **0.949**    |
 | **Static HD (mm)**      |    2.97   |     2.61    |     **2.40**    |
 | **Static TRE (mm)**     | 3.18±2.58 |  2.82±2.06  |  **1.09±1.39**  |
+
+![image](https://github.com/user-attachments/assets/e735a470-471b-4e7c-9cce-8058ac665bd4)
+
+![image](https://github.com/user-attachments/assets/23c660c6-b9e5-4fa0-88e0-cff7a307af6a)
 
 # Conclusions & Impact
 * **Efficacy**: Two-stage deep registration significantly reduces respiratory motion artifacts in kidney DCE-MRI, preserving intensity fidelity.
