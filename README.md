@@ -26,7 +26,7 @@ kidney-mri-evaluate --fixed /path/to/fixed_series --registered registered.npy
 ```
 
 # Background & Motivation
-**Problem**: Respiratory motion during 3D DCE-MRI corrupts kidney images, biasing downstream kinetic analyses (e.g., blood flow, GFR).
+**Problem**: Respiratory motion during 4D Discrete Contrast-Enhanced MRI (DCE-MRI) corrupts kidney images, biasing downstream kinetic analyses (e.g., blood flow, GFR).
 
 **Prior Work**: Traditional affine/non-rigid methods (optical flow, demons) can reduce motion but may alter intensity signals and are slow. Deep networks (VoxelMorph, Quicksilver) excel in brain, liver, lung, but have not been applied to abdominal DCE-MRI.
 
